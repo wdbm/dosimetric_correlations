@@ -47,9 +47,9 @@ Preprocess the CSV data such that all features are scaled to (-1, 1):
 Train and evaluate on preprocessed CSV data:
 
 ```Bash
-cures_cancer_1.py --help
+./cures_cancer_1.py --help
 
-cures_cancer_1.py --infile=preprocessed_data.csv
+./cures_cancer_1.py --infile=preprocessed_data.csv
 ```
 
 The basic accuracy evaluation is a printout of the percentage differences of the model hypothesis output values from input data values.
