@@ -39,8 +39,8 @@ options:
     -h, --help               display help message
     --version                display version and exit
 
-    --infile=FILENAME        CSV input file  [default: output.csv]
-    --outfile=FILENAME       CSV output file [default: output_preprocessed.csv]
+    --infile=FILENAME        CSV input file  [default: data.csv]
+    --outfile=FILENAME       CSV output file [default: data_preprocessed.csv]
 """
 
 from __future__ import division
@@ -51,7 +51,7 @@ import pandas as pd
 import sklearn.preprocessing
 
 name    = "preprocess_CSV_file"
-version = "2017-06-20T1815Z"
+version = "2017-06-20T1916Z"
 logo    = None
 
 def main(options):
