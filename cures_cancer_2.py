@@ -60,7 +60,7 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "cures_cancer_2.py"
-version = "2017-06-20T1816Z"
+version = "2017-06-20T2044Z"
 logo    = None
 
 def main(options):
@@ -95,7 +95,7 @@ def main(options):
     )
 
     x_data = data[:, 0:- number_targets]
-    y_data = data[:, number_targets + 3:]
+    y_data = data[:, - number_targets:]
 
     x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(
         x_data, y_data, test_size = fraction_test_set, random_state = 42

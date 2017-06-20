@@ -57,7 +57,7 @@ import numpy as np
 import tensorflow as tf
 
 name    = "cures_cancer_1.py"
-version = "2017-06-19T2122Z"
+version = "2017-06-20T2044Z"
 logo    = None
 
 def main(options):
@@ -91,7 +91,7 @@ def main(options):
     )
 
     x_data = data[:, 0:- number_targets]
-    y_data = data[:, number_targets + 3:]
+    y_data = data[:, - number_targets:]
 
     with tf.name_scope("input"):
         X          = tf.placeholder(tf.float32, [None, x_data.shape[1]])
