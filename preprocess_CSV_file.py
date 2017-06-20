@@ -51,7 +51,7 @@ import pandas as pd
 import sklearn.preprocessing
 
 name    = "preprocess_CSV_file"
-version = "2017-06-19T2122Z"
+version = "2017-06-20T1815Z"
 logo    = None
 
 def main(options):
@@ -62,7 +62,7 @@ def main(options):
     filename_CSV_output = options["--outfile"]
 
     if not os.path.isfile(os.path.expandvars(filename_CSV_input)):
-        log.error("file {filename} not found".format(
+        print("file {filename} not found".format(
             filename = filename_CSV_input
         ))
         exit()
