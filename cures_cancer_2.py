@@ -60,7 +60,7 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "cures_cancer_2.py"
-version = "2017-06-20T1713Z"
+version = "2017-06-20T1736Z"
 logo    = None
 
 def main(options):
@@ -170,10 +170,10 @@ def main(options):
 
         print("\naccuracy report:")
         h, a = sess.run([hypothesis, accuracy], feed_dict = {X: x_test, Y: y_test})
-        print("\ntest features data: {x_test}".format(
+        print("\ntest features data:\n\n{x_test}".format(
             x_test = x_test
         ))
-        print("\ntest targets data: {y_test}".format(
+        print("\ntest targets data:\n\n{y_test}".format(
             y_test = y_test
         ))
         print("\nhypothesis (predicted values):\n\n{hypothesis}\n\naccuracy "
