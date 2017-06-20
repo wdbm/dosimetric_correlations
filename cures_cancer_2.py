@@ -38,9 +38,9 @@ options:
     -h, --help                 display help message
     --version                  display version and exit
 
-    --epochs=INT               number of training epochs     [default: 500001]
+    --epochs=INT               number of training epochs     [default: 700001]
 
-    --learning_rate=FLOAT      learning rate                 [default: 0.1]
+    --learning_rate=FLOAT      learning rate                 [default: 0.09]
 
     --number_targets=INT       number of target variables for model (number of
                                rightmost columns in CSV that are output variables)
@@ -60,7 +60,7 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "cures_cancer_2.py"
-version = "2017-06-20T1736Z"
+version = "2017-06-20T1816Z"
 logo    = None
 
 def main(options):
@@ -110,14 +110,17 @@ def main(options):
         W1         = tf.Variable(tf.random_normal([x_train.shape[1], 50]),  name = "weight1")
         b1         = tf.Variable(tf.random_normal([50]),                    name = "bias1"  )
         layer1     = tf.sigmoid(tf.matmul(X, W1) + b1)
+        layer1     = tf.nn.dropout(layer1, keep_prob = 0.7)
 
         W2         = tf.Variable(tf.random_normal([50, 50]),                name = "weight2")
         b2         = tf.Variable(tf.random_normal([50]),                    name = "bias2"  )
         layer2     = tf.sigmoid(tf.matmul(layer1, W2) + b2)
+        layer2     = tf.nn.dropout(layer2, keep_prob = 0.7)
 
         W3         = tf.Variable(tf.random_normal([50, 50]),                name = "weight3")
         b3         = tf.Variable(tf.random_normal([50]),                    name = "bias3"  )
         layer3     = tf.sigmoid(tf.matmul(layer2, W3) + b3)
+        layer3     = tf.nn.dropout(layer3, keep_prob = 0.7)
 
         W4         = tf.Variable(tf.random_normal([50, y_train.shape[1]]),  name = "weight4")
         b4         = tf.Variable(tf.random_normal([y_train.shape[1]]),      name = "bias4"  )
