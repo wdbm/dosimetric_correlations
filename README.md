@@ -16,7 +16,7 @@ Install the following:
 
 # use
 
-The input data should be CSV with the following fields:
+The input data could be CSV with the following fields:
 
 - features:
     - PTV vol (cc)
@@ -34,7 +34,23 @@ The input data should be CSV with the following fields:
     - V30 (%)
     - Mean (Gy)
 
-The rightmost columns should be the targets.
+It could be CSV with the following fields:
+
+-features:
+    - Dose/#
+    - Prescription
+    - PTV vol (cc)
+    - Lungs-GTV vol (cc)
+    - Lungs-GTV-PTV vol (cc)
+    - Lungs-GTV in PTV vol (cc)
+    - KBP Lungs (cc)
+    - Lungs-GTV - KBP Lungs (cc)
+- targets:
+    - V5 (%)
+    - V20 (%)
+    - Mean Lungs-GTV (Gy)
+
+The rightmost columns should be the targets. The number of targets can be specified as an argument for a neural network script.
 
 Manually remove missing values from data.
 
@@ -44,12 +60,10 @@ Preprocess the CSV data such that all features are scaled to (-1, 1):
 ./preprocess_CSV_file.py --infile=data.csv --outfile=preprocessed_data.csv
 ```
 
-Train and evaluate on preprocessed CSV data:
+Train and evaluate on preprocessed CSV data with TensorBoard:
 
 ```Bash
-./cures_cancer_2.py --help
+./cures_cancer.py --help
 
-./cures_cancer_2.py --infile=preprocessed_data.csv
+./cures_cancer.py --infile=preprocessed_data.csv --TensorBoard
 ```
-
-The basic accuracy evaluation is a printout of the percentage differences of the model hypothesis output values from input data values.
