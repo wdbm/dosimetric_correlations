@@ -44,11 +44,13 @@ options:
 
     --number_targets=INT       number of target variables for model (number of
                                rightmost columns in CSV that are output variables)
-                                                             [default: 5]
+                                                             [default: 3]
 
     --test_set_fraction=FLOAT  fraction of data for testing  [default: 0.33]
 
     --infile=FILENAME          CSV input file                [default: data_preprocessed.csv]
+
+    --TensorBoard              run with TensorBoard
 """
 
 import docopt
@@ -60,7 +62,7 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "cures_cancer_2.py"
-version = "2017-06-20T2044Z"
+version = "2017-07-17T1613Z"
 logo    = None
 
 def main(options):
@@ -71,6 +73,7 @@ def main(options):
     learning_rate      = float(options["--learning_rate"])
     fraction_test_set  = float(options["--test_set_fraction"])
     path_logs          = "/tmp/run"
+    use_TensorBoard    = options["--TensorBoard"]
     filename_CSV_input = options["--infile"]
 
     if not os.path.isfile(os.path.expandvars(filename_CSV_input)):
@@ -82,10 +85,11 @@ def main(options):
     tf.reset_default_graph()
 
     # TensorBoard
-    subprocess.Popen(["killall tensorboard"],            shell = True)
-    subprocess.Popen(["rm -rf /tmp/run"],                shell = True)
-    subprocess.Popen(["tensorboard --logdir=/tmp/run"],  shell = True)
-    subprocess.Popen(["xdg-open http://127.0.1.1:6006"], shell = True)
+    if use_TensorBoard:
+        subprocess.Popen(["killall tensorboard"],            shell = True)
+        subprocess.Popen(["rm -rf /tmp/run"],                shell = True)
+        subprocess.Popen(["tensorboard --logdir=/tmp/run"],  shell = True)
+        subprocess.Popen(["xdg-open http://127.0.1.1:6006"], shell = True)
 
     data = np.loadtxt(
         filename_CSV_input,
@@ -147,8 +151,8 @@ def main(options):
     tf.summary.scalar("cost", cost)
 
     with tf.name_scope("accuracy"):
-        # difference of predicted value from actual value as percentage of value
-        accuracy    = tf.subtract(tf.constant(100, dtype = tf.float32), tf.multiply(tf.divide(tf.sqrt(tf.square(hypothesis - Y)), Y), tf.constant(100, dtype = tf.float32)))
+        #accuracy    = tf.subtract(tf.constant(100, dtype = tf.float32), tf.multiply(tf.divide(tf.sqrt(tf.square(hypothesis - Y)), Y), tf.constant(100, dtype = tf.float32)))
+        accuracy    = tf.divide(hypothesis, Y)
     tf.summary.histogram("accuracy", accuracy)
 
     summary_operation = tf.summary.merge_all()
@@ -180,13 +184,13 @@ def main(options):
             y_test = y_test
         ))
         print("\nhypothesis (predicted values):\n\n{hypothesis}\n\naccuracy "
-              "(difference of predicted value from actual value as percentage "
-              "of value):\n\n{accuracy}".format(
+              "(hypothesis / data -- i.e. closer to unity is more accurate):\n\n{accuracy}".format(
             hypothesis = h,
             accuracy   = a
         ))
 
-    subprocess.Popen(["killall tensorboard"],            shell = True)
+    if use_TensorBoard:
+        subprocess.Popen(["killall tensorboard"], shell = True)
 
 if __name__ == "__main__":
     options = docopt.docopt(__doc__)
