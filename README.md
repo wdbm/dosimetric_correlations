@@ -36,7 +36,7 @@ The input data could be CSV with the following fields:
 
 It could be CSV with the following fields:
 
--features:
+- features:
     - Dose/#
     - Prescription
     - PTV vol (cc)
