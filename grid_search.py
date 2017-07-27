@@ -9,7 +9,7 @@
 #                                                                              #
 # LICENCE INFORMATION                                                          #
 #                                                                              #
-# This program is prepares hyperparameter grid search.                         #
+# This program prepares a hyperparameter grid search.                          #
 #                                                                              #
 # copyright (C) 2017 William Breaden Madden, Gavin Kirby                       #
 #                                                                              #
@@ -43,7 +43,7 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "grid_search"
-version = "2017-07-27T1717Z"
+version = "2017-07-27T1834Z"
 logo    = None
 
 def main():
