@@ -39,8 +39,8 @@ options:
     --version                  display version and exit
 
     --epochs=INT               number of training epochs     [default: 700001]
-
     --learning_rate=FLOAT      learning rate                 [default: 0.09]
+    --number_nodes_layer=INT   number of nodes per layer     [default: 50]
 
     --number_targets=INT       number of target variables for model (number of
                                rightmost columns in CSV that are output variables)
@@ -50,11 +50,18 @@ options:
 
     --infile=FILENAME          CSV input file                [default: data_preprocessed.csv]
 
+    --save_results_to_file     save results to file
+    --results_file=FILENAME    CSV results file              [default: results.csv]
+
     --TensorBoard              run with TensorBoard
+    --path_logs=PATH           TensorBoard logs path         [default: /tmp/run]
 """
 
+from __future__ import division
+import datetime
 import docopt
 import os
+import os.path
 import subprocess
 
 import numpy as np
@@ -62,19 +69,22 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "cures_cancer"
-version = "2017-07-17T1624Z"
+version = "2017-07-27T1407Z"
 logo    = None
 
 def main(options):
 
     # configuration
-    number_targets     = int(options["--number_targets"])
-    epochs             = int(options["--epochs"])
-    learning_rate      = float(options["--learning_rate"])
-    fraction_test_set  = float(options["--test_set_fraction"])
-    path_logs          = "/tmp/run"
-    use_TensorBoard    = options["--TensorBoard"]
-    filename_CSV_input = options["--infile"]
+    number_targets       = int(options["--number_targets"])
+    epochs               = int(options["--epochs"])
+    learning_rate        = float(options["--learning_rate"])
+    number_nodes_layer   = int(options["--number_nodes_layer"])
+    fraction_test_set    = float(options["--test_set_fraction"])
+    path_logs            = options["--path_logs"]
+    use_TensorBoard      = options["--TensorBoard"]
+    save_results_to_file = options["--save_results_to_file"]
+    filename_CSV_input   = options["--infile"]
+    filename_results     = options["--results_file"]
 
     if not os.path.isfile(os.path.expandvars(filename_CSV_input)):
         print("file {filename} not found".format(
@@ -86,10 +96,10 @@ def main(options):
 
     # TensorBoard
     if use_TensorBoard:
-        subprocess.Popen(["killall tensorboard"],            shell = True)
-        subprocess.Popen(["rm -rf /tmp/run"],                shell = True)
-        subprocess.Popen(["tensorboard --logdir=/tmp/run"],  shell = True)
-        subprocess.Popen(["xdg-open http://127.0.1.1:6006"], shell = True)
+        subprocess.Popen(["killall tensorboard"],                                            shell = True)
+        subprocess.Popen(["rm -rf {path_logs}".format(path_logs = path_logs)],               shell = True)
+        subprocess.Popen(["tensorboard --logdir={path_logs}".format(path_logs = path_logs)], shell = True)
+        subprocess.Popen(["xdg-open http://127.0.1.1:6006"],                                 shell = True)
 
     data = np.loadtxt(
         filename_CSV_input,
@@ -111,23 +121,23 @@ def main(options):
     tf.summary.histogram("input", X)
 
     with tf.name_scope("architecture"):
-        W1         = tf.Variable(tf.random_normal([x_train.shape[1], 50]),  name = "weight1")
-        b1         = tf.Variable(tf.random_normal([50]),                    name = "bias1"  )
+        W1         = tf.Variable(tf.random_normal([x_train.shape[1], number_nodes_layer]),   name = "weight1")
+        b1         = tf.Variable(tf.random_normal([number_nodes_layer]),                     name = "bias1"  )
         layer1     = tf.sigmoid(tf.matmul(X, W1) + b1)
         layer1     = tf.nn.dropout(layer1, keep_prob = 0.7)
 
-        W2         = tf.Variable(tf.random_normal([50, 50]),                name = "weight2")
-        b2         = tf.Variable(tf.random_normal([50]),                    name = "bias2"  )
+        W2         = tf.Variable(tf.random_normal([number_nodes_layer, number_nodes_layer]), name = "weight2")
+        b2         = tf.Variable(tf.random_normal([number_nodes_layer]),                     name = "bias2"  )
         layer2     = tf.sigmoid(tf.matmul(layer1, W2) + b2)
         layer2     = tf.nn.dropout(layer2, keep_prob = 0.7)
 
-        W3         = tf.Variable(tf.random_normal([50, 50]),                name = "weight3")
-        b3         = tf.Variable(tf.random_normal([50]),                    name = "bias3"  )
+        W3         = tf.Variable(tf.random_normal([number_nodes_layer, number_nodes_layer]), name = "weight3")
+        b3         = tf.Variable(tf.random_normal([number_nodes_layer]),                     name = "bias3"  )
         layer3     = tf.sigmoid(tf.matmul(layer2, W3) + b3)
         layer3     = tf.nn.dropout(layer3, keep_prob = 0.7)
 
-        W4         = tf.Variable(tf.random_normal([50, y_train.shape[1]]),  name = "weight4")
-        b4         = tf.Variable(tf.random_normal([y_train.shape[1]]),      name = "bias4"  )
+        W4         = tf.Variable(tf.random_normal([number_nodes_layer, y_train.shape[1]]),   name = "weight4")
+        b4         = tf.Variable(tf.random_normal([y_train.shape[1]]),                       name = "bias4"  )
         #hypothesis = tf.sigmoid(tf.matmul(layer3, W4) + b4)
         hypothesis = tf.matmul(layer3, W4) + b4
     tf.summary.histogram("W1", W1)
@@ -159,15 +169,19 @@ def main(options):
 
     with tf.Session() as sess:
 
+        time_start = datetime.datetime.utcnow()
+
         sess.run(tf.global_variables_initializer())
 
-        writer = tf.summary.FileWriter(path_logs)
+        if use_TensorBoard:
+            writer = tf.summary.FileWriter(path_logs)
 
         for step in range(epochs):
 
             _, summary = sess.run([train, summary_operation], feed_dict = {X: x_train, Y: y_train})
 
-            writer.add_summary(summary, step)
+            if use_TensorBoard:
+                writer.add_summary(summary, step)
 
             if step % 100 == 0:
                 print("\nstep: {step}\ncost: {cost}".format(
@@ -189,8 +203,40 @@ def main(options):
             accuracy   = a
         ))
 
+        time_stop = datetime.datetime.utcnow()
+
+        print("\naccuracy mean:               {accuracy_mean}\naccuracy standard deviation: {accuracy_standard_deviation}".format(
+            accuracy_mean               = a.mean(),
+            accuracy_standard_deviation = a.std()
+        ))
+
+    if save_results_to_file:
+        if not os.path.isfile(filename_results):
+            with open(filename_results, "a") as file_results:
+                line = [
+                    "duration_hours",
+                    "epochs",
+                    "learning_rate",
+                    "number_nodes_layer",
+                    "accuracy_mean",
+                    "accuracy_standard_deviation"
+                ]
+                file_results.write(",".join(line) + "\n")
+
+        with open(filename_results, "a") as file_results:
+            line = [
+                str((time_stop - time_start).seconds / 3600),
+                str(epochs),
+                str(learning_rate),
+                str(number_nodes_layer),
+                str(a.mean()),
+                str(a.std())
+            ]
+            file_results.write(",".join(line) + "\n")
+
     if use_TensorBoard:
-        subprocess.Popen(["killall tensorboard"], shell = True)
+        subprocess.Popen(["killall tensorboard"],                              shell = True)
+        subprocess.Popen(["rm -rf {path_logs}".format(path_logs = path_logs)], shell = True)
 
 if __name__ == "__main__":
     options = docopt.docopt(__doc__)
