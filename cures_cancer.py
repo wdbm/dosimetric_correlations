@@ -35,26 +35,27 @@ usage:
     program [options]
 
 options:
-    -h, --help                 display help message
-    --version                  display version and exit
+    -h, --help                        display help message
+    --version                         display version and exit
 
-    --epochs=INT               number of training epochs     [default: 700001]
-    --learning_rate=FLOAT      learning rate                 [default: 0.09]
-    --number_nodes_layer=INT   number of nodes per layer     [default: 50]
+    --epochs=INT                      number of training epochs     [default: 700001]
+    --learning_rate=FLOAT             learning rate                 [default: 0.09]
+    --number_nodes_layer=INT          number of nodes per layer     [default: 50]
+    --dropout_keep_probability=FLOAT  dropout keep probability      [default: 0.7]
 
-    --number_targets=INT       number of target variables for model (number of
-                               rightmost columns in CSV that are output variables)
-                                                             [default: 3]
+    --number_targets=INT              number of target variables for model (number of
+                                      rightmost columns in CSV that are output variables)
+                                                                    [default: 3]
 
-    --test_set_fraction=FLOAT  fraction of data for testing  [default: 0.33]
+    --test_set_fraction=FLOAT         fraction of data for testing  [default: 0.33]
 
-    --infile=FILENAME          CSV input file                [default: data_preprocessed.csv]
+    --infile=FILENAME                 CSV input file                [default: data_preprocessed.csv]
 
-    --save_results_to_file     save results to file
-    --results_file=FILENAME    CSV results file              [default: results.csv]
+    --save_results_to_file            save results to file
+    --results_file=FILENAME           CSV results file              [default: results.csv]
 
-    --TensorBoard              run with TensorBoard
-    --path_logs=PATH           TensorBoard logs path         [default: /tmp/run]
+    --TensorBoard                     run with TensorBoard
+    --path_logs=PATH                  TensorBoard logs path         [default: /tmp/run]
 """
 
 from __future__ import division
@@ -69,22 +70,23 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "cures_cancer"
-version = "2017-07-27T1407Z"
+version = "2017-07-30T2238Z"
 logo    = None
 
 def main(options):
 
     # configuration
-    number_targets       = int(options["--number_targets"])
-    epochs               = int(options["--epochs"])
-    learning_rate        = float(options["--learning_rate"])
-    number_nodes_layer   = int(options["--number_nodes_layer"])
-    fraction_test_set    = float(options["--test_set_fraction"])
-    path_logs            = options["--path_logs"]
-    use_TensorBoard      = options["--TensorBoard"]
-    save_results_to_file = options["--save_results_to_file"]
-    filename_CSV_input   = options["--infile"]
-    filename_results     = options["--results_file"]
+    number_targets           = int(options["--number_targets"])
+    epochs                   = int(options["--epochs"])
+    learning_rate            = float(options["--learning_rate"])
+    number_nodes_layer       = int(options["--number_nodes_layer"])
+    dropout_keep_probability = float(options["--dropout_keep_probability"])
+    fraction_test_set        = float(options["--test_set_fraction"])
+    path_logs                = options["--path_logs"]
+    use_TensorBoard          = options["--TensorBoard"]
+    save_results_to_file     = options["--save_results_to_file"]
+    filename_CSV_input       = options["--infile"]
+    filename_results         = options["--results_file"]
 
     if not os.path.isfile(os.path.expandvars(filename_CSV_input)):
         print("file {filename} not found".format(
@@ -124,17 +126,17 @@ def main(options):
         W1         = tf.Variable(tf.random_normal([x_train.shape[1], number_nodes_layer]),   name = "weight1")
         b1         = tf.Variable(tf.random_normal([number_nodes_layer]),                     name = "bias1"  )
         layer1     = tf.sigmoid(tf.matmul(X, W1) + b1)
-        layer1     = tf.nn.dropout(layer1, keep_prob = 0.7)
+        layer1     = tf.nn.dropout(layer1, keep_prob = dropout_keep_probability)
 
         W2         = tf.Variable(tf.random_normal([number_nodes_layer, number_nodes_layer]), name = "weight2")
         b2         = tf.Variable(tf.random_normal([number_nodes_layer]),                     name = "bias2"  )
         layer2     = tf.sigmoid(tf.matmul(layer1, W2) + b2)
-        layer2     = tf.nn.dropout(layer2, keep_prob = 0.7)
+        layer2     = tf.nn.dropout(layer2, keep_prob = dropout_keep_probability)
 
         W3         = tf.Variable(tf.random_normal([number_nodes_layer, number_nodes_layer]), name = "weight3")
         b3         = tf.Variable(tf.random_normal([number_nodes_layer]),                     name = "bias3"  )
         layer3     = tf.sigmoid(tf.matmul(layer2, W3) + b3)
-        layer3     = tf.nn.dropout(layer3, keep_prob = 0.7)
+        layer3     = tf.nn.dropout(layer3, keep_prob = dropout_keep_probability)
 
         W4         = tf.Variable(tf.random_normal([number_nodes_layer, y_train.shape[1]]),   name = "weight4")
         b4         = tf.Variable(tf.random_normal([y_train.shape[1]]),                       name = "bias4"  )
@@ -157,7 +159,8 @@ def main(options):
         #cost       = -tf.reduce_mean(Y * tf.log(hypothesis) + (1 - Y) * tf.log(1 - hypothesis))
         #cost       = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels = Y, logits = hypothesis))
         cost       = tf.reduce_mean(tf.square(hypothesis - Y))
-        train      = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
+        #train      = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
+        train      = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
     tf.summary.scalar("cost", cost)
 
     with tf.name_scope("accuracy"):
@@ -218,6 +221,7 @@ def main(options):
                     "epochs",
                     "learning_rate",
                     "number_nodes_layer",
+                    "dropout_keep_probability",
                     "accuracy_mean",
                     "accuracy_standard_deviation"
                 ]
@@ -229,6 +233,7 @@ def main(options):
                 str(epochs),
                 str(learning_rate),
                 str(number_nodes_layer),
+                str(dropout_keep_probability),
                 str(a.mean()),
                 str(a.std())
             ]

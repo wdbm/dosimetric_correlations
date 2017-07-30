@@ -43,24 +43,26 @@ import sklearn.model_selection
 import tensorflow as tf
 
 name    = "grid_search"
-version = "2017-07-27T1834Z"
+version = "2017-07-30T2238Z"
 logo    = None
 
 def main():
 
-    epochs                 = [5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 20000]
-    learning_rate          = [0.005, 0.01, 0.015, 0.02, 0.07, 0.08]
-    number_nodes_layer     = [180, 200, 220, 250, 300]
-    element_specifications = [epochs, learning_rate, number_nodes_layer]
+    epochs                   = [500, 1000, 5000, 10000, 100000]
+    learning_rate            = [0.07, 0.08, 0.09]
+    number_nodes_layer       = [50, 100, 150, 200]
+    dropout_keep_probability = [1.0]
+    element_specifications   = [epochs, learning_rate, number_nodes_layer, dropout_keep_probability]
 
     combinations = [list(list_configuration) for list_configuration in list(itertools.product(*element_specifications))]
 
-    commands = []
+    commands = ["#!/bin/bash"]
     for combination in combinations:
-        command = "./cures_cancer.py --epochs={epochs} --learning_rate={learning_rate} --number_nodes_layer={number_nodes_layer} --save_results_to_file".format(
-            epochs             = combination[0],
-            learning_rate      = combination[1],
-            number_nodes_layer = combination[2]
+        command = "./cures_cancer.py --epochs={epochs} --learning_rate={learning_rate} --number_nodes_layer={number_nodes_layer} --dropout_keep_probability={dropout_keep_probability} --save_results_to_file".format(
+            epochs                   = combination[0],
+            learning_rate            = combination[1],
+            number_nodes_layer       = combination[2],
+            dropout_keep_probability = combination[3]
         )
         commands.append(command)
 
