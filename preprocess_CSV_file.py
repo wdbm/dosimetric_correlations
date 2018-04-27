@@ -77,7 +77,7 @@ def main(options):
 
     # scale feature columns
     print("scale features")
-    data[indices_of_feature_columns] = scaler.fit_transform(data[indices_of_feature_columns])
+    data.iloc[:,indices_of_feature_columns] = scaler.fit_transform(data.iloc[:,indices_of_feature_columns])
 
     print("save scaled CSV to {filename}".format(filename = filename_CSV_output))
     data.to_csv(
